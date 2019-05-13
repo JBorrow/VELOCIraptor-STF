@@ -2892,6 +2892,7 @@ void GetSOMasses(Options &opt, const Int_t nbodies, Particle *Part, Int_t ngroup
     Double_t m200val=log(opt.rhocrit*200.0);
     Double_t m200mval=log(opt.rhobg*200.0);
     Double_t m500val=log(opt.rhocrit*500.0);
+    Double_t mindelta = 1e-3;
     //find the lowest rho value and set minim threshold to half that
     Double_t minlgrhoval = min({virval, m200val, mBN98val, m200mval})-log(2.0);
     Double_t fac,rhoval,rhoval2;
@@ -3129,32 +3130,64 @@ private(i,j,k,taggedparts,radii,masses,indices,posref,posparts,velparts,typepart
             {
                 //linearly interpolate, unless previous density also below threshold (which would happen at the start, then just set value)
                 delta = (virval-rhoval);
-                pdata[i].gRvir=rc*exp(gamma1*delta);
-                pdata[i].gMvir=EncMass*exp(gamma2*delta);
+                //if delta is small, then just use rc and current EncMass
+                //otherwise, use interpolation
+                if (fabs(delta) >= mindelta) {
+                    pdata[i].gRvir=rc*exp(gamma1*delta);
+                    pdata[i].gMvir=EncMass*exp(gamma2*delta);
+                }
+                else{
+                    pdata[i].gRvir=rc;
+                    pdata[i].gMvir=EncMass;
+                }
             }
             if (pdata[i].gR200c==0) if (rhoval<m200val)
             {
-                    delta = (m200val-rhoval);
+                delta = (m200val-rhoval);
+                if (fabs(delta) >= mindelta) {
                     pdata[i].gR200c=rc*exp(gamma1*delta);
                     pdata[i].gM200c=EncMass*exp(gamma2*delta);
+                }
+                else {
+                    pdata[i].gR200c=rc;
+                    pdata[i].gM200c=EncMass;
+                }
             }
             if (pdata[i].gR200m==0) if (rhoval<m200mval)
             {
                 delta = (m200mval-rhoval);
-                pdata[i].gR200m=rc*exp(gamma1*delta);
-                pdata[i].gM200m=EncMass*exp(gamma2*delta);
+                if (fabs(delta) >= mindelta) {
+                    pdata[i].gR200m=rc*exp(gamma1*delta);
+                    pdata[i].gM200m=EncMass*exp(gamma2*delta);
+                }
+                else {
+                    pdata[i].gR200m=rc;
+                    pdata[i].gM200m=EncMass;
+                }
             }
             if (pdata[i].gR500c==0) if (rhoval<m500val)
             {
                 delta = (m500val-rhoval);
-                pdata[i].gR500c=rc*exp(gamma1*delta);
-                pdata[i].gM500c=EncMass*exp(gamma2*delta);
+                if (fabs(delta) >= mindelta) {
+                    pdata[i].gR500c=rc*exp(gamma1*delta);
+                    pdata[i].gM500c=EncMass*exp(gamma2*delta);
+                }
+                else {
+                    pdata[i].gR500c=rc;
+                    pdata[i].gM500c=EncMass;
+                }
             }
             if (pdata[i].gRBN98==0) if (rhoval<mBN98val)
             {
                 delta = (mBN98val-rhoval);
-                pdata[i].gRBN98=rc*exp(gamma1*delta);
-                pdata[i].gMBN98=EncMass*exp(gamma2*delta);
+                if (fabs(delta) >= mindelta) {
+                    pdata[i].gRBN98=rc*exp(gamma1*delta);
+                    pdata[i].gMBN98=EncMass*exp(gamma2*delta);
+                }
+                else {
+                    pdata[i].gRBN98=rc;
+                    pdata[i].gMBN98=EncMass;
+                }
             }
             //if all overdensity thresholds found, store index and exit
             if (pdata[i].gR200m!=0&&pdata[i].gR200c!=0&&pdata[i].gRvir!=0&&pdata[i].gR500c!=0&&pdata[i].gRBN98!=0) {
